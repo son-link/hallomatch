@@ -35,6 +35,12 @@ Click each card to turn it over. If when you reveal the second card both match, 
 
 To pause the game, click on the icon in the top right corner.
 
+### Acknowledgements
+
+Thanks to Rafa Lagoon and his community for testing the game and giving me feedback.
+
+To you, for playing it ;)
+
 ## Español
 
 Hallomatch es un pequeño juego de buscar parejas de cartas con temática de Halloween.
@@ -71,8 +77,8 @@ Pulsa cada carta para darle la vuelta. Si al revelar la segunda ambas coinciden,
 
 Para pausar el juego, pulsa sobre el icono que aparece en la esquina superior derecha.
 
-### Créditos
+### Agradecimientos
 
+Agradecimientos a Rafa Lagoon y a su comunidad por testear el juego y darme feedback.
 
-
-Agradecimientos a Rafa Lagoon y a su comunidad por 
+A ti, por jugarlo ;)
