@@ -1,0 +1,2 @@
+- [ ] Add support for gamepads
+	- [ ] Port for emulation handled
