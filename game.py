@@ -26,7 +26,13 @@ STATE_GAME_OVER = 5
 class HallowenMatch():
     def __init__(self):
         self.game_state = STATE_MAIN_MENU  # Game state
-        
+
+        # Card's sprites
+        self.card = {
+            'back': (8, 0),
+            'front': (32, 0)
+        }
+
         # The position of yhe sprites in the image bank
         self.cards = {
             'skull': (72, 0),
@@ -43,11 +49,7 @@ class HallowenMatch():
             'sphinx': (232, 0),
         }
 
-        # Card's sprites
-        self.card = {
-            'back': (8, 0),
-            'front': (32, 0)
-        }
+        self.level = None  # Current level
 
         # The levels and his default values
         self.levels = {
@@ -78,16 +80,15 @@ class HallowenMatch():
             }
         }
 
-        self.level = None  # Current level
         self.flip_down = False  # If true, the cards will be turned face down.
+        self.font = pyxel.Font("retro-pixel-cute-mono.bdf")  # The font to use
+        self.frame_count = 0  # The number of frames that have transcured
+        self.matchs = None  # In this list the cards of the game will be stored.
 
         # The displacement on the vertical and horizontal axes from which the cards will start to be drawn.
         self.offset_x = 0
         self.offset_y = 0
-        self.matchs = None  # In this list the cards of the game will be stored.
-        self.font = pyxel.Font("retro-pixel-cute-mono.bdf")  # The font to use
         self.time = 60  # Playing time
-        self.frame_count = 0  # The number of frames that have transc
 
         # We start Pyxel, load the assets, the image of the initial screen and enable the mouse.
         pyxel.init(WITH, HEIGHT, title='Hallomatch', display_scale=3,
@@ -97,6 +98,107 @@ class HallowenMatch():
         pyxel.images[1].load(0, 0, 'main_screen.png')
 
         pyxel.run(self.update, self.draw)
+
+    def centerText(self, text: str, y: int, color: int, font=None):
+        '''This function displays a text centred on the horizontal axis'''
+        pyxel.text(
+            (WITH / 2) - ((len(text) * 6) / 2),
+            y, text, color, font
+        )
+
+    def draw(self):
+        """This function is called at each frame and is where the code
+            for displaying images and text on the screen will go.
+        """
+        pyxel.cls(0)
+        if self.game_state == STATE_MAIN_MENU:
+            pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
+            center = pyxel.floor((WITH - 60) / 2)
+            self.drawBtn('Easy', center, 86, 60, 12, 9, 15)
+            self.drawBtn('Medium', center, 100, 60, 12, 9, 15)
+            self.drawBtn('Hard', center, 114, 60, 12, 9, 15)
+            self.drawBtn('Very Hard', center, 128, 60, 12, 9, 15)
+            self.drawBtn('HELL!', center, 142, 60, 12, 9, 15)
+        elif self.game_state != STATE_MAIN_MENU:
+            pyxel.blt(8, 6, 0, 248, 8, 8, 8)
+            pyxel.text(18, 8, f'{self.time:02}', 14)
+            pyxel.blt(WITH - 16, 8, 0, 248, 0, 8, 8)
+
+            for y in range(self.level['rows']):
+                for x in range(self.level['cols']):
+                    xx = (x * 24) + self.offset_x
+                    yy = (y * 24) + self.offset_y
+
+                    if self.matchs[y][x]['selected']:
+                        pyxel.blt(xx, yy, 0, self.card['front'][0], self.card['front'][1], 24, 24)
+                        sprite = self.matchs[y][x]['sprite']
+                        pyxel.blt(xx + 4, yy + 4, 0, sprite[0], sprite[1], 16, 16, 14)
+                    else:
+                        pyxel.blt(xx, yy, 0, self.card['back'][0], self.card['back'][1], 24, 24)
+
+        if self.game_state == STATE_FINISH:
+            left = pyxel.floor((WITH - 196) / 2)
+            pyxel.rect(left, 64, 196, 28, 9)
+            self.centerText('YOU WIN!', 64, 11, self.font)
+            self.centerText('Press to return to the main menu', 74, 15, self.font)
+
+        elif self.game_state == STATE_GAME_OVER:
+            left = pyxel.floor((WITH - 196) / 2)
+            pyxel.rect(left, 64, 196, 28, 9)
+            self.centerText('YOU LOOSE', 64, 6, self.font)
+            self.centerText('Press to return to the main menu', 74, 15, self.font)
+        elif self.game_state == STATE_PAUSE:
+            left = pyxel.floor((WITH - 72) / 2)
+            btnLeft = pyxel.floor((WITH - 52) / 2)
+            pyxel.rect(left, 64, 72, 50, 0)
+            self.centerText('PAUSED', 65, 15, self.font)
+            self.drawBtn('Continue', btnLeft, 84, 52, 12, 11, 15)
+            self.drawBtn('Exit', btnLeft, 98, 52, 12, 6, 15)
+
+    def drawBtn(self, text: str, x: int, y: int, w: int, h: int, bg: int, color: int):
+        """This function draws a button on the screen
+
+        Args:
+            text (str): The text to show in the button
+            x (int): The initial position on the horizontal axis
+            y (int): The initial position on the vertical axis
+            w (int): Button width
+            h (int): Button height
+            bg (int): Button color
+            color (int): Text color
+        """
+        pyxel.rect(x, y, w, h, bg)
+        text_w = len(text) * 6
+        text_x = x + pyxel.floor((w - text_w) / 2)
+        text_y = y - 2
+        pyxel.text(text_x, text_y, text, color, self.font)
+
+    def initGame(self):
+        """This function starts a new game, thus resetting several of the game variables.
+        """
+        self.matchs = []
+        self.matchs = [[0 for i in range(self.level['cols'])] for j in range(self.level['rows'])]
+        self.selected = []
+        self.win = False
+
+        for y in range(self.level['rows']):
+            x = 0
+            for x in range(0, self.level['cols'], 2):
+                key, value = random.choice(list(self.cards.items()))
+                self.matchs[y][x] = {
+                    'card': key,
+                    'sprite': value,
+                    'selected': False
+                }
+                self.matchs[y][x + 1] = {
+                    'card': key,
+                    'sprite': value,
+                    'selected': False
+                }
+
+        self.matchs = self.suffle(self.matchs)
+        self.offset_x = ((WITH - (self.level['cols'] * 24)) / 2)
+        self.offset_y = ((HEIGHT - (self.level['rows'] * 24)) / 2)
 
     def update(self):
         """This function is called on every frame and is where most of the game's running code is located.
@@ -160,13 +262,13 @@ class HallowenMatch():
 
                     # We add the selected card to the list where we store these cards.
                     self.selected.append((y, x))
-                    
+
                     # We mark in the list of cards that was selected
                     self.matchs[y][x]['selected'] = True
 
                     # If we have selected 2 cards, we get their card identifier,
                     # and if they are the same, they are marked and we add 1 second.
-                    # If they are not, we indicate that they are going to be flipped and remove 1 second. 
+                    # If they are not, we indicate that they are going to be flipped and remove 1 second.
                     if len(self.selected) == 2:
                         card1 = self.matchs[self.selected[0][0]][self.selected[0][1]]
                         card2 = self.matchs[self.selected[1][0]][self.selected[1][1]]
@@ -215,55 +317,6 @@ class HallowenMatch():
                 elif x >= btnLeft and x <= btnLeft + 52 and y >= 98 and y <= 110:
                     self.game_state = STATE_MAIN_MENU
 
-    def draw(self):
-        """This function is called at each frame and is where the code
-            for displaying images and text on the screen will go.
-        """
-        pyxel.cls(0)
-        if self.game_state == STATE_MAIN_MENU:
-            pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
-            center = pyxel.floor((WITH - 60) / 2)
-            self.drawBtn('Easy', center, 86, 60, 12, 9, 15)
-            self.drawBtn('Medium', center, 100, 60, 12, 9, 15)
-            self.drawBtn('Hard', center, 114, 60, 12, 9, 15)
-            self.drawBtn('Very Hard', center, 128, 60, 12, 9, 15)
-            self.drawBtn('HELL!', center, 142, 60, 12, 9, 15)
-        elif self.game_state != STATE_MAIN_MENU:
-            pyxel.blt(8, 6, 0, 248, 8, 8, 8)
-            pyxel.text(18, 8, f'{self.time:02}', 14)
-            pyxel.blt(WITH - 16, 8, 0, 248, 0, 8, 8)
-
-            for y in range(self.level['rows']):
-                for x in range(self.level['cols']):
-                    xx = (x * 24) + self.offset_x
-                    yy = (y * 24) + self.offset_y
-
-                    if self.matchs[y][x]['selected']:
-                        pyxel.blt(xx, yy, 0, self.card['front'][0], self.card['front'][1], 24, 24)
-                        sprite = self.matchs[y][x]['sprite']
-                        pyxel.blt(xx + 4, yy + 4, 0, sprite[0], sprite[1], 16, 16, 14)
-                    else:
-                        pyxel.blt(xx, yy, 0, self.card['back'][0], self.card['back'][1], 24, 24)
-
-        if self.game_state == STATE_FINISH:
-            left = pyxel.floor((WITH - 196) / 2)
-            pyxel.rect(left, 64, 196, 28, 9)
-            self.centerText('YOU WIN!', 64, 11, self.font)
-            self.centerText('Press to return to the main menu', 74, 15, self.font)
-
-        elif self.game_state == STATE_GAME_OVER:
-            left = pyxel.floor((WITH - 196) / 2)
-            pyxel.rect(left, 64, 196, 28, 9)
-            self.centerText('YOU LOOSE', 64, 6, self.font)
-            self.centerText('Press to return to the main menu', 74, 15, self.font)
-        elif self.game_state == STATE_PAUSE:
-            left = pyxel.floor((WITH - 72) / 2)
-            btnLeft = pyxel.floor((WITH - 52) / 2)
-            pyxel.rect(left, 64, 72, 50, 0)
-            self.centerText('PAUSED', 65, 15, self.font)
-            self.drawBtn('Continue', btnLeft, 84, 52, 12, 11, 15)
-            self.drawBtn('Exit', btnLeft, 98, 52, 12, 6, 15)
-
     def suffle(self, array: list):
         """This function takes the specified list and returns it unordered.
 
@@ -281,58 +334,6 @@ class HallowenMatch():
                 array[y][x] = array[yy][xx]
                 array[yy][xx] = tmp
         return array
-
-    def drawBtn(self, text: str, x: int, y: int, w: int, h: int, bg: int, color: int):
-        """This function draws a button on the screen
-
-        Args:
-            text (str): The text to show in the button
-            x (int): The initial position on the horizontal axis
-            y (int): The initial position on the vertical axis
-            w (int): Button width
-            h (int): Button height
-            bg (int): Button color
-            color (int): Text color
-        """
-        pyxel.rect(x, y, w, h, bg)
-        text_w = len(text) * 6
-        text_x = x + pyxel.floor((w - text_w) / 2)
-        text_y = y - 2
-        pyxel.text(text_x, text_y, text, color, self.font)
-
-    def initGame(self):
-        """This function starts a new game, thus resetting several of the game variables.
-        """
-        self.matchs = []
-        self.matchs = [[0 for i in range(self.level['cols'])] for j in range(self.level['rows'])]
-        self.selected = []
-        self.win = False
-
-        for y in range(self.level['rows']):
-            x = 0
-            for x in range(0, self.level['cols'], 2):
-                key, value = random.choice(list(self.cards.items()))
-                self.matchs[y][x] = {
-                    'card': key,
-                    'sprite': value,
-                    'selected': False
-                }
-                self.matchs[y][x + 1] = {
-                    'card': key,
-                    'sprite': value,
-                    'selected': False
-                }
-
-        self.matchs = self.suffle(self.matchs)
-        self.offset_x = ((WITH - (self.level['cols'] * 24)) / 2)
-        self.offset_y = ((HEIGHT - (self.level['rows'] * 24)) / 2)
-
-    def centerText(self, text: str, y: int, color: int, font=None):
-        '''This function displays a text centred on the horizontal axis'''
-        pyxel.text(
-            (WITH / 2) - ((len(text) * 6) / 2),
-            y, text, color, font
-        )
 
 
 HallowenMatch()
