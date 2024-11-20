@@ -16,16 +16,17 @@ WITH = 320
 HEIGHT = 177
 
 # Game states
-STATE_MAIN_MENU = 1
-STATE_PLAYING = 2
-STATE_PAUSE = 3
-STATE_FINISH = 4
-STATE_GAME_OVER = 5
+STATE_INIT = 1
+STATE_MAIN_MENU = 2
+STATE_PLAYING = 3
+STATE_PAUSE = 4
+STATE_FINISH = 5
+STATE_GAME_OVER = 6
 
 
 class HallowenMatch():
     def __init__(self):
-        self.game_state = STATE_MAIN_MENU  # Game state
+        self.button_pressed = False
 
         # Card's sprites
         self.card = {
@@ -47,6 +48,17 @@ class HallowenMatch():
             'demon': (200, 0),
             'mimic': (216, 0),
             'sphinx': (232, 0),
+        }
+
+        self.game_state = STATE_INIT  # Game state
+        self.gamepad = False
+        self.gamepad_cursors = {
+            'main': 0,
+            'game': {
+                'x': 0,
+                'y': 0
+            },
+            'pause': 0
         }
 
         self.level = None  # Current level
@@ -80,6 +92,8 @@ class HallowenMatch():
             }
         }
 
+        self.leves_pos = ('easy', 'medium', 'hard', 'very_hard', 'hell')
+
         self.flip_down = False  # If true, the cards will be turned face down.
         self.font = pyxel.Font("retro-pixel-cute-mono.bdf")  # The font to use
         self.frame_count = 0  # The number of frames that have transcured
@@ -94,7 +108,6 @@ class HallowenMatch():
         pyxel.init(WITH, HEIGHT, title='Hallomatch', display_scale=3,
                    capture_scale=2, capture_sec=60)
         pyxel.load('assets.pyxres')
-        pyxel.mouse(True)
         pyxel.images[1].load(0, 0, 'main_screen.png')
 
         pyxel.run(self.update, self.draw)
@@ -111,18 +124,24 @@ class HallowenMatch():
             for displaying images and text on the screen will go.
         """
         pyxel.cls(0)
-        if self.game_state == STATE_MAIN_MENU:
+
+        if self.game_state == STATE_INIT:
+            pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
+            self.centerText('Press A button or mouse left click', 86, 9, self.font)
+        elif self.game_state == STATE_MAIN_MENU:
             pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
             center = pyxel.floor((WITH - 60) / 2)
-            self.drawBtn('Easy', center, 86, 60, 12, 9, 15)
-            self.drawBtn('Medium', center, 100, 60, 12, 9, 15)
-            self.drawBtn('Hard', center, 114, 60, 12, 9, 15)
-            self.drawBtn('Very Hard', center, 128, 60, 12, 9, 15)
-            self.drawBtn('HELL!', center, 142, 60, 12, 9, 15)
+            self.drawBtn('Easy', center, 86, 60, 14, 9, 15, 0)
+            self.drawBtn('Medium', center, 102, 60, 14, 9, 15, 1)
+            self.drawBtn('Hard', center, 118, 60, 14, 9, 15, 2)
+            self.drawBtn('Very Hard', center, 134, 60, 14, 9, 15, 3)
+            self.drawBtn('HELL!', center, 150, 60, 14, 9, 15, 4)
         elif self.game_state != STATE_MAIN_MENU:
-            pyxel.blt(8, 6, 0, 248, 8, 8, 8)
-            pyxel.text(18, 8, f'{self.time:02}', 14)
-            pyxel.blt(WITH - 16, 8, 0, 248, 0, 8, 8)
+            pyxel.blt(8, 6, 0, 248, 8, 8, 8)  # Sand clock
+            pyxel.text(18, 8, f'{self.time:02}', 14)  # Time
+
+            if not self.gamepad:
+                pyxel.blt(WITH - 16, 8, 0, 248, 0, 8, 8)  # Pause icon
 
             for y in range(self.level['rows']):
                 for x in range(self.level['cols']):
@@ -135,6 +154,17 @@ class HallowenMatch():
                         pyxel.blt(xx + 4, yy + 4, 0, sprite[0], sprite[1], 16, 16, 14)
                     else:
                         pyxel.blt(xx, yy, 0, self.card['back'][0], self.card['back'][1], 24, 24)
+
+                    # Draw current card border
+                    if (
+                        self.gamepad and
+                        x == self.gamepad_cursors['game']['x'] and
+                        y == self.gamepad_cursors['game']['y']
+                    ):
+                        pyxel.blt(xx, yy, 0, 0, 8, 8, 8, 0)
+                        pyxel.blt(xx, yy + 16, 0, 0, 8, 8, 8, 0, 90)
+                        pyxel.blt(xx + 16, yy + 16, 0, 0, 8, 8, 8, 0, 180)
+                        pyxel.blt(xx + 16, yy, 0, 0, 8, 8, 8, 0, 270)
 
         if self.game_state == STATE_FINISH:
             left = pyxel.floor((WITH - 196) / 2)
@@ -150,12 +180,12 @@ class HallowenMatch():
         elif self.game_state == STATE_PAUSE:
             left = pyxel.floor((WITH - 72) / 2)
             btnLeft = pyxel.floor((WITH - 52) / 2)
-            pyxel.rect(left, 64, 72, 50, 0)
+            pyxel.rect(left, 62, 72, 54, 0)
             self.centerText('PAUSED', 65, 15, self.font)
-            self.drawBtn('Continue', btnLeft, 84, 52, 12, 11, 15)
-            self.drawBtn('Exit', btnLeft, 98, 52, 12, 6, 15)
+            self.drawBtn('Continue', btnLeft, 84, 52, 14, 11, 15, 0)
+            self.drawBtn('Exit', btnLeft, 100, 52, 14, 6, 15, 1)
 
-    def drawBtn(self, text: str, x: int, y: int, w: int, h: int, bg: int, color: int):
+    def drawBtn(self, text: str, x: int, y: int, w: int, h: int, bg: int, color: int, pos: int):
         """This function draws a button on the screen
 
         Args:
@@ -166,16 +196,83 @@ class HallowenMatch():
             h (int): Button height
             bg (int): Button color
             color (int): Text color
+            pos (int): Position in the menu
         """
         pyxel.rect(x, y, w, h, bg)
+        if (
+            self.gamepad and
+            (self.game_state == STATE_MAIN_MENU and pos == self.gamepad_cursors['main']) or
+            (self.game_state == STATE_PAUSE and pos == self.gamepad_cursors['pause'])
+        ):
+            pyxel.rectb(x, y, w, h, color)
+
         text_w = len(text) * 6
         text_x = x + pyxel.floor((w - text_w) / 2)
-        text_y = y - 2
+        text_y = y
         pyxel.text(text_x, text_y, text, color, self.font)
 
-    def initGame(self):
+    def getBtnPressed(self):
+        """Detects which button or key is pressed and returns a text string representing what was pressed
+
+        Returns:
+            str: A text string representing what was pressed
+        """
+        if (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP) or
+            pyxel.btnp(pyxel.KEY_UP)
+        ):
+            self.button_pressed = True
+            return 'up'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN) or
+            pyxel.btnp(pyxel.KEY_DOWN)
+        ):
+            self.button_pressed = True
+            return 'down'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT) or
+            pyxel.btnp(pyxel.KEY_LEFT)
+        ):
+            self.button_pressed = True
+            return 'left'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT) or
+            pyxel.btnp(pyxel.KEY_RIGHT)
+        ):
+            self.button_pressed = True
+            return 'right'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A) or
+            pyxel.btnp(pyxel.KEY_Z)
+        ):
+            self.button_pressed = True
+            return 'a'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B) or
+            pyxel.btnp(pyxel.KEY_X)
+        ):
+            self.button_pressed = True
+            return 'b'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START) or
+            pyxel.btnp(pyxel.KEY_RETURN)
+        ):
+            self.button_pressed = True
+            return 'start'
+        elif (
+            pyxel.btnp(pyxel.GAMEPAD1_BUTTON_BACK) or
+            pyxel.btnp(pyxel.KEY_SPACE)
+        ):
+            self.button_pressed = True
+            return 'select'
+
+    def initGame(self, level: str):
         """This function starts a new game, thus resetting several of the game variables.
         """
+
+        self.level = self.levels[level]
+        self.game_state = STATE_PLAYING
+        self.time = self.level['time']
         self.matchs = []
         self.matchs = [[0 for i in range(self.level['cols'])] for j in range(self.level['rows'])]
         self.selected = []
@@ -203,8 +300,15 @@ class HallowenMatch():
     def update(self):
         """This function is called on every frame and is where most of the game's running code is located.
         """
-
-        if self.game_state == STATE_MAIN_MENU:
+        if self.game_state == STATE_INIT:
+            __button = self.getBtnPressed()
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) or __button == 'a':
+                if __button:
+                    self.gamepad = True
+                else:
+                    pyxel.mouse(True)
+                self.game_state = STATE_MAIN_MENU
+        elif self.game_state == STATE_MAIN_MENU:
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
                 center = pyxel.floor((WITH - 60) / 2)
                 __level = None
@@ -222,10 +326,16 @@ class HallowenMatch():
                         __level = 'hell'
 
                     if __level:
-                        self.level = self.levels[__level]
-                        self.initGame()
-                        self.game_state = STATE_PLAYING
-                        self.time = self.level['time']
+                        self.initGame(__level)
+
+            elif self.getBtnPressed() == 'up' and self.gamepad_cursors['main'] > 0:
+                self.gamepad_cursors['main'] -= 1
+            elif self.getBtnPressed() == 'down' and self.gamepad_cursors['main'] < 4:
+                self.gamepad_cursors['main'] += 1
+            elif self.getBtnPressed() == 'a' or self.getBtnPressed() == 'start':
+                __level = self.leves_pos[self.gamepad_cursors['main']]
+                self.initGame(__level)
+                self.gamepad_cursors['main'] = 0
 
         elif self.game_state == STATE_PLAYING:
             self.frame_count += 1
@@ -234,10 +344,40 @@ class HallowenMatch():
                 if self.time == 0:
                     self.game_state = STATE_GAME_OVER
 
-            if pyxel.btnp(pyxel.KEY_SPACE) or pyxel.btnp(pyxel.KEY_P):
+            if (
+                pyxel.btnp(pyxel.KEY_SPACE) or
+                pyxel.btnp(pyxel.KEY_P) or
+                self.getBtnPressed() == 'start'
+            ):
+                self.gamepad_cursors['pause'] = 0
                 self.game_state = STATE_PAUSE
 
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+            if self.getBtnPressed() == 'up':
+                if self.gamepad_cursors['game']['y'] > 0:
+                    self.gamepad_cursors['game']['y'] -= 1
+                else:
+                    self.gamepad_cursors['game']['y'] = self.level['rows'] - 1
+                self.button_pressed = False
+            elif self.getBtnPressed() == 'down':
+                if self.gamepad_cursors['game']['y'] < self.level['rows'] - 1:
+                    self.gamepad_cursors['game']['y'] += 1
+                else:
+                    self.gamepad_cursors['game']['y'] = 0
+                self.button_pressed = False
+            elif self.getBtnPressed() == 'left':
+                if self.gamepad_cursors['game']['x'] > 0:
+                    self.gamepad_cursors['game']['x'] -= 1
+                else:
+                    self.gamepad_cursors['game']['x'] = self.level['cols'] - 1
+                self.button_pressed = False
+            elif self.getBtnPressed() == 'right':
+                if self.gamepad_cursors['game']['x'] < self.level['cols'] - 1:
+                    self.gamepad_cursors['game']['x'] += 1
+                else:
+                    self.gamepad_cursors['game']['x'] = 0
+                self.button_pressed = False
+
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) or self.getBtnPressed() == 'a':
                 if (
                     pyxel.mouse_x >= WITH - 16 and pyxel.mouse_x <= WITH - 8 and
                     pyxel.mouse_y >= 8 and pyxel.mouse_y <= 16
@@ -247,8 +387,16 @@ class HallowenMatch():
                 elif not self.flip_down:
                     # If you are not waiting for the cards to turn face down,
                     # we calculate the position in the array of the selected card
-                    x = pyxel.floor((pyxel.mouse_x - self.offset_x) / 24)
-                    y = pyxel.floor((pyxel.mouse_y - self.offset_y) / 24)
+                    x = 0
+                    y = 0
+
+                    if self.button_pressed:
+                        x = self.gamepad_cursors['game']['x']
+                        y = self.gamepad_cursors['game']['y']
+                        self.button_pressed = False
+                    else:
+                        x = pyxel.floor((pyxel.mouse_x - self.offset_x) / 24)
+                        y = pyxel.floor((pyxel.mouse_y - self.offset_y) / 24)
 
                     # If the calculated position is larger on one of the axes
                     # is larger than the size of the list, or the chart is face up,
@@ -306,6 +454,7 @@ class HallowenMatch():
 
         elif self.game_state == STATE_PAUSE:
             btnLeft = pyxel.floor((WITH - 52) / 2)
+
             x = pyxel.mouse_x
             y = pyxel.mouse_y
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
@@ -316,6 +465,12 @@ class HallowenMatch():
                     self.game_state = STATE_PLAYING
                 elif x >= btnLeft and x <= btnLeft + 52 and y >= 98 and y <= 110:
                     self.game_state = STATE_MAIN_MENU
+            elif self.getBtnPressed() == 'up' and self.gamepad_cursors['pause'] > 0:
+                self.gamepad_cursors['pause'] -= 1
+            elif self.getBtnPressed() == 'down' and self.gamepad_cursors['pause'] < 1:
+                self.gamepad_cursors['pause'] += 1
+            elif self.getBtnPressed() == 'a' or self.getBtnPressed() == 'start':
+                self.game_state = STATE_PLAYING if self.gamepad_cursors['pause'] == 0 else STATE_MAIN_MENU
 
     def suffle(self, array: list):
         """This function takes the specified list and returns it unordered.
