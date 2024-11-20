@@ -453,7 +453,7 @@ class HallowenMatch():
 
         elif (
             (self.game_state == STATE_FINISH or self.game_state == STATE_GAME_OVER) and
-            pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) or self.getBtnPressed() == 'a'
+            (pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) or self.getBtnPressed() == 'a')
         ):
             self.game_state = STATE_MAIN_MENU
 
@@ -462,7 +462,7 @@ class HallowenMatch():
 
             x = pyxel.mouse_x
             y = pyxel.mouse_y
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) and not self.gamepad:
                 if (
                     (x >= WITH - 16 and x <= WITH - 8 and y >= 8 and y <= 16) or
                     (x >= btnLeft and x <= btnLeft + 52 and y >= 84 and y <= 96)
@@ -474,8 +474,10 @@ class HallowenMatch():
                 self.gamepad_cursors['pause'] -= 1
             elif self.getBtnPressed() == 'down' and self.gamepad_cursors['pause'] < 1:
                 self.gamepad_cursors['pause'] += 1
-            elif self.getBtnPressed() == 'a' or self.getBtnPressed() == 'start':
+            elif self.getBtnPressed() == 'a':
                 self.game_state = STATE_PLAYING if self.gamepad_cursors['pause'] == 0 else STATE_MAIN_MENU
+            elif self.getBtnPressed() == 'start':
+                self.game_state = STATE_PLAYING
 
     def suffle(self, array: list):
         """This function takes the specified list and returns it unordered.
