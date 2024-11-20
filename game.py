@@ -170,13 +170,18 @@ class HallowenMatch():
             left = pyxel.floor((WITH - 196) / 2)
             pyxel.rect(left, 64, 196, 28, 9)
             self.centerText('YOU WIN!', 64, 11, self.font)
-            self.centerText('Press to return to the main menu', 74, 15, self.font)
+            __text = 'Press mouse left click'
+            if self.gamepad:
+                __text = 'Press A button'
+            self.centerText(__text, 74, 15, self.font)
 
         elif self.game_state == STATE_GAME_OVER:
             left = pyxel.floor((WITH - 196) / 2)
             pyxel.rect(left, 64, 196, 28, 9)
-            self.centerText('YOU LOOSE', 64, 6, self.font)
-            self.centerText('Press to return to the main menu', 74, 15, self.font)
+            __text = 'Press mouse left click'
+            if self.gamepad:
+                __text = 'Press A button'
+            self.centerText(__text, 74, 15, self.font)
         elif self.game_state == STATE_PAUSE:
             left = pyxel.floor((WITH - 72) / 2)
             btnLeft = pyxel.floor((WITH - 52) / 2)
@@ -448,7 +453,7 @@ class HallowenMatch():
 
         elif (
             (self.game_state == STATE_FINISH or self.game_state == STATE_GAME_OVER) and
-            pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT)
+            pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) or self.getBtnPressed() == 'a'
         ):
             self.game_state = STATE_MAIN_MENU
 
