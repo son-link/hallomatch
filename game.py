@@ -319,15 +319,15 @@ class HallowenMatch():
                 __level = None
                 if pyxel.mouse_x >= center and pyxel.mouse_x <= center + 60:
                     self.time = 60
-                    if pyxel.mouse_y >= 86 and pyxel.mouse_y <= 98:
+                    if pyxel.mouse_y >= 86 and pyxel.mouse_y <= 100:
                         __level = 'easy'
-                    elif pyxel.mouse_y >= 100 and pyxel.mouse_y <= 112:
+                    elif pyxel.mouse_y >= 102 and pyxel.mouse_y <= 116:
                         __level = 'medium'
-                    elif pyxel.mouse_y >= 114 and pyxel.mouse_y <= 126:
+                    elif pyxel.mouse_y >= 118 and pyxel.mouse_y <= 132:
                         __level = 'hard'
-                    elif pyxel.mouse_y >= 128 and pyxel.mouse_y <= 140:
+                    elif pyxel.mouse_y >= 134 and pyxel.mouse_y <= 148:
                         __level = 'very_hard'
-                    elif pyxel.mouse_y >= 142 and pyxel.mouse_y <= 154:
+                    elif pyxel.mouse_y >= 150 and pyxel.mouse_y <= 164:
                         __level = 'hell'
 
                     if __level:
