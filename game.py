@@ -26,6 +26,12 @@ STATE_GAME_OVER = 6
 
 class HallowenMatch():
     def __init__(self):
+        # We start Pyxel, load the assets, the image of the initial screen and enable the mouse.
+        pyxel.init(WITH, HEIGHT, title='Hallomatch', display_scale=3,
+                   capture_scale=2, capture_sec=60)
+        pyxel.load('assets.pyxres')
+        pyxel.images[1].load(0, 0, 'main_screen.png')
+
         self.button_pressed = False
 
         # Card's sprites
@@ -92,7 +98,17 @@ class HallowenMatch():
             }
         }
 
-        self.leves_pos = ('easy', 'medium', 'hard', 'very_hard', 'hell')
+        self.levels_pos = ('easy', 'medium', 'hard', 'very_hard', 'hell')
+
+        center = pyxel.floor((WITH - 60) / 2)
+        self.levels_btns = (
+            {'x': center, 'y': 72, 'w': 60, 'h': 14, 'text': 'Easy', 'level': 'easy'},
+            {'x': center, 'y': 88, 'w': 60, 'h': 14, 'text': 'medium', 'level': 'medium'},
+            {'x': center, 'y': 104, 'w': 60, 'h': 14, 'text': 'Hard', 'level': 'hard'},
+            {'x': center, 'y': 120, 'w': 60, 'h': 14, 'text': 'Very hard', 'level': 'very_hard'},
+            {'x': center, 'y': 136, 'w': 60, 'h': 14, 'text': 'HELL!', 'level': 'hell'},
+            {'x': center, 'y': 152, 'w': 60, 'h': 14, 'text': 'Exit', 'level': 'exit'},
+        )
 
         self.flip_down = False  # If true, the cards will be turned face down.
         self.font = pyxel.Font("retro-pixel-cute-mono.bdf")  # The font to use
@@ -103,12 +119,6 @@ class HallowenMatch():
         self.offset_x = 0
         self.offset_y = 0
         self.time = 60  # Playing time
-
-        # We start Pyxel, load the assets, the image of the initial screen and enable the mouse.
-        pyxel.init(WITH, HEIGHT, title='Hallomatch', display_scale=3,
-                   capture_scale=2, capture_sec=60)
-        pyxel.load('assets.pyxres')
-        pyxel.images[1].load(0, 0, 'main_screen.png')
 
         pyxel.run(self.update, self.draw)
 
@@ -127,15 +137,16 @@ class HallowenMatch():
 
         if self.game_state == STATE_INIT:
             pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
-            self.centerText('Press A button or mouse left click', 86, 9, self.font)
+            self.centerText('Press A button or mouse left click', 56, 9, self.font)
         elif self.game_state == STATE_MAIN_MENU:
             pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
-            center = pyxel.floor((WITH - 60) / 2)
-            self.drawBtn('Easy', center, 86, 60, 14, 9, 15, 0)
-            self.drawBtn('Medium', center, 102, 60, 14, 9, 15, 1)
-            self.drawBtn('Hard', center, 118, 60, 14, 9, 15, 2)
-            self.drawBtn('Very Hard', center, 134, 60, 14, 9, 15, 3)
-            self.drawBtn('HELL!', center, 150, 60, 14, 9, 15, 4)
+            self.centerText('Select level', 56, 9, self.font)
+            for index, btn in enumerate(self.levels_btns):
+                if btn['level'] != 'exit':
+                    self.drawBtn(btn['text'], btn['x'], btn['y'], btn['w'], btn['h'], 9, 15, index)
+                else:
+                    self.drawBtn(btn['text'], btn['x'], btn['y'], btn['w'], btn['h'], 6, 15, index)
+
         elif self.game_state != STATE_MAIN_MENU:
             pyxel.blt(8, 6, 0, 248, 8, 8, 8)  # Sand clock
             pyxel.text(18, 8, f'{self.time:02}', 14)  # Time
@@ -315,30 +326,25 @@ class HallowenMatch():
                 self.game_state = STATE_MAIN_MENU
         elif self.game_state == STATE_MAIN_MENU:
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-                center = pyxel.floor((WITH - 60) / 2)
-                __level = None
-                if pyxel.mouse_x >= center and pyxel.mouse_x <= center + 60:
-                    self.time = 60
-                    if pyxel.mouse_y >= 86 and pyxel.mouse_y <= 100:
-                        __level = 'easy'
-                    elif pyxel.mouse_y >= 102 and pyxel.mouse_y <= 116:
-                        __level = 'medium'
-                    elif pyxel.mouse_y >= 118 and pyxel.mouse_y <= 132:
-                        __level = 'hard'
-                    elif pyxel.mouse_y >= 134 and pyxel.mouse_y <= 148:
-                        __level = 'very_hard'
-                    elif pyxel.mouse_y >= 150 and pyxel.mouse_y <= 164:
-                        __level = 'hell'
+                for btn in self.levels_btns:
+                    if (
+                        pyxel.mouse_x >= btn['x'] and pyxel.mouse_x <= btn['x'] + btn['w'] and
+                        pyxel.mouse_y >= btn['y'] and pyxel.mouse_y <= btn['y'] + btn['h']
+                    ):
+                        if btn['level'] == 'exit':
+                            pyxel.quit()
 
-                    if __level:
-                        self.initGame(__level)
+                        self.initGame(btn['level'])
 
             elif self.getBtnPressed() == 'up' and self.gamepad_cursors['main'] > 0:
                 self.gamepad_cursors['main'] -= 1
-            elif self.getBtnPressed() == 'down' and self.gamepad_cursors['main'] < 4:
+            elif self.getBtnPressed() == 'down' and self.gamepad_cursors['main'] < len(self.levels_btns) - 1:
                 self.gamepad_cursors['main'] += 1
             elif self.getBtnPressed() == 'a' or self.getBtnPressed() == 'start':
-                __level = self.leves_pos[self.gamepad_cursors['main']]
+                if self.gamepad_cursors['main'] == len(self.levels_btns) - 1:
+                    pyxel.quit()                    
+
+                __level = self.levels_pos[self.gamepad_cursors['main']]
                 self.initGame(__level)
                 self.gamepad_cursors['main'] = 0
 
