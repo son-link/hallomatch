@@ -12,8 +12,8 @@ There are 12 characters, and they come out randomly:
 * Dragon
 * Ghost
 * Mimic
-* Phinx
 * Pumpkin
+* Sphinx
 * Skeleton
 * Vampire
 * Werewolf
@@ -34,6 +34,12 @@ Available for Linux, Windows or via web browser (web version not work properly o
 Click each card to turn it over. If when you reveal the second card both match, you have discovered a pair and 1 second will be added to your time. If you fail, 1 second is subtracted. If time runs out, the game is over.
 
 To pause the game, click on the icon in the top right corner.
+
+### Downloads
+
+* GitHub: https://github.com/son-link/hallomatch/releases/
+* Itch: https://son-link.itch.io/hallomatch (only stable releases)
+* Online: https://son-link.github.io/hallomatch/ and Itch's page
 
 ### Acknowledgements
 
@@ -76,6 +82,12 @@ Disponible para Linux, Windows o a través del navegador web (la versión web no
 Pulsa cada carta para darle la vuelta. Si al revelar la segunda ambas coinciden, has descubierto una pareja y se sumará 1 segundo al tiempo. Si fallas, se te resta un segundo. Si se acaba el tiempo, se acabó el juego.
 
 Para pausar el juego, pulsa sobre el icono que aparece en la esquina superior derecha.
+
+### Descargas
+
+* GitHub: https://github.com/son-link/hallomatch/releases/
+* Itch: https://son-link.itch.io/hallomatch (solo lanzamientos estables)
+* Online: https://son-link.github.io/hallomatch/ y en la página de Itch
 
 ### Agradecimientos
 
