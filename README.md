@@ -33,7 +33,18 @@ Available for Linux, Windows or via web browser (web version not work properly o
 
 Click each card to turn it over. If when you reveal the second card both match, you have discovered a pair and 1 second will be added to your time. If you fail, 1 second is subtracted. If time runs out, the game is over.
 
-To pause the game, click on the icon in the top right corner.
+To pause the game with the mause, click on the icon in the top right corner.
+
+|Device     |Key/Button |Action           |
+|-----------|-----------|-----------------|
+|Mouse      |Move       |Move the cursor  |
+|Mouse      |Left button|Flip/Pause/Select|
+|Keyboard   |Arrows     |Move/Mark option |
+|Keyboard   |Z          |Flip/Select option|
+|Keyboard   |Enter      |Pause/Resume|
+|Gamepad    |D-Pad      |Move/Mark option|
+|Gamepad    |A          |Flip/Select option|
+|Gamepad    |Start      |Pause/Resume|
 
 ### Downloads
 
@@ -82,6 +93,17 @@ Disponible para Linux, Windows o a través del navegador web (la versión web no
 Pulsa cada carta para darle la vuelta. Si al revelar la segunda ambas coinciden, has descubierto una pareja y se sumará 1 segundo al tiempo. Si fallas, se te resta un segundo. Si se acaba el tiempo, se acabó el juego.
 
 Para pausar el juego, pulsa sobre el icono que aparece en la esquina superior derecha.
+
+|Dispositivo|Tecla/Botón|Acción           |
+|-----------|-----------|-----------------|
+|Ratón      |Mover      |Mueve el cursor  |
+|Ratón      |Botón izq  |Voltear/Pausa/Seleccionar|
+|Teclado    |Flechas    |Moverse/Marcar opción|
+|Teclado    |Z          |Voltear/Seleccionar opción|
+|Teclado    |Intro      |Pausar/Resumir|
+|Mando      |D-Pad      |Moverse/Marcar opción|
+|Mando      |A          |Voltear/Seleccionar opción|
+|Mando      |Start      |Pausar/Resumir|
 
 ### Descargas
 
