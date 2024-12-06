@@ -3,7 +3,7 @@
 # desc:  Hallomatch is a small Halloween-themed card matching game.
 # site: https://github.com/son-link/hallomtach
 # license: GNU General Public License v3.0
-# version: 0.3.0
+# version: 20241206
 
 import pyxel
 import random
@@ -94,7 +94,7 @@ class HallowenMatch():
             'hell': {
                 'cols': 12,
                 'rows': 6,
-                'time': 90
+                'time': 100
             }
         }
 
@@ -103,7 +103,7 @@ class HallowenMatch():
         center = pyxel.floor((WITH - 60) / 2)
         self.levels_btns = (
             {'x': center, 'y': 72, 'w': 60, 'h': 14, 'text': 'Easy', 'level': 'easy'},
-            {'x': center, 'y': 88, 'w': 60, 'h': 14, 'text': 'medium', 'level': 'medium'},
+            {'x': center, 'y': 88, 'w': 60, 'h': 14, 'text': 'Medium', 'level': 'medium'},
             {'x': center, 'y': 104, 'w': 60, 'h': 14, 'text': 'Hard', 'level': 'hard'},
             {'x': center, 'y': 120, 'w': 60, 'h': 14, 'text': 'Very hard', 'level': 'very_hard'},
             {'x': center, 'y': 136, 'w': 60, 'h': 14, 'text': 'HELL!', 'level': 'hell'},
@@ -122,12 +122,22 @@ class HallowenMatch():
 
         pyxel.run(self.update, self.draw)
 
-    def centerText(self, text: str, y: int, color: int, font=None):
-        '''This function displays a text centred on the horizontal axis'''
-        pyxel.text(
-            (WITH / 2) - ((len(text) * 6) / 2),
-            y, text, color, font
-        )
+    def centerText(self, text: str, y: int, color: int, font: pyxel.Font = None):
+        """This function displays a text centred on the horizontal axis
+
+        Args:
+            text (str): The text to draw
+            y (int): Position of the text from top
+            color (int): Pyxel palette color for text
+            font (pyxel.Font, optional): Pyxel font to use. Defaults to None.
+
+        Returns:
+            Int: The initial position of text on the horizontal axis
+        """
+        x = pyxel.floor(WITH / 2) - ((len(text) * 6) / 2)
+        pyxel.text(x, y, text, color, font)
+
+        return x
 
     def draw(self):
         """This function is called at each frame and is where the code
@@ -137,10 +147,16 @@ class HallowenMatch():
 
         if self.game_state == STATE_INIT:
             pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
-            self.centerText('Press A button or mouse left click', 56, 9, self.font)
+            x = self.centerText('    : Start', 56, 9, self.font)
+            pyxel.blt(x, 59, 0, 56, 16, 24, 8)
+            self.centerText('How to play', 72, 8, self.font)
+            self.centerText('Mouse: left click to flip card', 86, 15, self.font)
+            self.centerText('Keyboard: Move: arrow keys. Z: Select', 100, 15, self.font)
+            self.centerText('Gamepad: Move: D-PAD. A: Select', 114, 15, self.font)
         elif self.game_state == STATE_MAIN_MENU:
             pyxel.blt(32, 0, 1, 0, 0, WITH, HEIGHT)
-            self.centerText('Select level', 56, 9, self.font)
+            x = self.centerText('      : Select level', 56, 9, self.font)
+            pyxel.blt(x, 59, 0, 80, 16, 32, 8)
             for index, btn in enumerate(self.levels_btns):
                 if btn['level'] != 'exit':
                     self.drawBtn(btn['text'], btn['x'], btn['y'], btn['w'], btn['h'], 9, 15, index)
@@ -149,7 +165,7 @@ class HallowenMatch():
 
         elif self.game_state != STATE_MAIN_MENU:
             pyxel.blt(8, 6, 0, 248, 8, 8, 8)  # Sand clock
-            pyxel.text(18, 8, f'{self.time:02}', 14)  # Time
+            pyxel.text(18, 8, f'{self.time:03}', 14)  # Time
 
             if not self.gamepad:
                 pyxel.blt(WITH - 16, 8, 0, 248, 0, 8, 8)  # Pause icon
@@ -189,6 +205,7 @@ class HallowenMatch():
         elif self.game_state == STATE_GAME_OVER:
             left = pyxel.floor((WITH - 196) / 2)
             pyxel.rect(left, 64, 196, 28, 9)
+            self.centerText('Oh!. Maybe next time ;)', 64, 6, self.font)
             __text = 'Press mouse left click'
             if self.gamepad:
                 __text = 'Press A button'
